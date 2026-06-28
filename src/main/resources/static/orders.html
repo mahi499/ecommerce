@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEasy - Orders</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🛍️ ShopEasy</h1>
+        <div class="nav-links">
+            <a href="products.html">🏠 Products</a>
+            <a href="cart.html">🛒 Cart</a>
+            <a href="orders.html">📦 Orders</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page">
+        <h2>📦 My Orders</h2>
+        <div id="orders" class="orders-list"></div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('userId') || 1;
+
+        async function loadOrders() {
+            const response = await fetch(
+                `http://localhost:8086/api/orders/${userId}`
+            );
+            const orders = await response.json();
+            const container = document.getElementById('orders');
+            container.innerHTML = '';
+
+            if (orders.length === 0) {
+                container.innerHTML =
+                    '<p>No orders yet! <a href="products.html">Shop now</a></p>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const date = new Date(order.createdAt).toLocaleDateString();
+                const div = document.createElement('div');
+                div.className = 'order-card';
+                div.innerHTML = `
+                    <div class="order-info">
+                        <h3>Order #${order.id}</h3>
+                        <p>Total: ₹${order.totalPrice}</p>
+                        <p>Status: <span class="status">${order.status}</span></p>
+                        <p>Date: ${date}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>

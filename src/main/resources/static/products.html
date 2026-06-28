@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEasy - Products</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🛍️ ShopEasy</h1>
+        <div class="nav-links">
+            <a href="products.html">🏠 Products</a>
+            <a href="cart.html">🛒 Cart</a>
+            <a href="orders.html">📦 Orders</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page">
+        <!-- Add Product Section -->
+        <div class="add-product-box">
+            <h2>➕ Add New Product</h2>
+            <div class="form-row">
+                <input type="text" id="pName" placeholder="Product Name" />
+                <input type="text" id="pDesc" placeholder="Description" />
+                <input type="number" id="pPrice" placeholder="Price (₹)" />
+                <input type="number" id="pStock" placeholder="Stock" />
+                <button onclick="addProduct()">Add Product</button>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <h2 style="margin: 20px 0 15px">🛒 All Products</h2>
+        <div id="products" class="products-grid"></div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('userId') || 1;
+
+        async function loadProducts() {
+            const response = await fetch('http://localhost:8086/api/products');
+            const products = await response.json();
+            const container = document.getElementById('products');
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                container.innerHTML = '<p>No products yet! Add one above.</p>';
+                return;
+            }
+
+            products.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product-card';
+                div.innerHTML = `
+                    <div class="product-info">
+                        <h3>${p.name}</h3>
+                        <p class="desc">${p.description || ''}</p>
+                        <p class="price">₹${p.price}</p>
+                        <p class="stock">Stock: ${p.stock}</p>
+                    </div>
+                    <div class="product-actions">
+                        <input type="number" id="qty-${p.id}"
+                            value="1" min="1" max="${p.stock}" />
+                        <button class="add-cart-btn"
+                            onclick="addToCart(${p.id})">
+                            🛒 Add to Cart
+                        </button>
+                        <button class="delete-btn"
+                            onclick="deleteProduct(${p.id})">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('pName').value;
+            const description = document.getElementById('pDesc').value;
+            const price = document.getElementById('pPrice').value;
+            const stock = document.getElementById('pStock').value;
+            if (!name || !price || !stock) {
+                alert('Please fill name, price and stock!');
+                return;
+            }
+            await fetch('http://localhost:8086/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, description, price, stock })
+            });
+            document.getElementById('pName').value = '';
+            document.getElementById('pDesc').value = '';
+            document.getElementById('pPrice').value = '';
+            document.getElementById('pStock').value = '';
+            loadProducts();
+        }
+
+        async function addToCart(productId) {
+            const quantity = document.getElementById(`qty-${productId}`).value;
+            const response = await fetch(
+                `http://localhost:8086/api/cart?userId=${userId}&productId=${productId}&quantity=${quantity}`,
+                { method: 'POST' }
+            );
+            if (response.ok) {
+                alert('Added to cart successfully!');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Delete this product?')) return;
+            await fetch(`http://localhost:8086/api/products/${id}`,
+                { method: 'DELETE' }
+            );
+            loadProducts();
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>

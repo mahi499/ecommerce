@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEasy - Cart</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🛍️ ShopEasy</h1>
+        <div class="nav-links">
+            <a href="products.html">🏠 Products</a>
+            <a href="cart.html">🛒 Cart</a>
+            <a href="orders.html">📦 Orders</a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page">
+        <h2>🛒 My Cart</h2>
+        <div id="cart" class="cart-list"></div>
+        <div id="cart-total" class="cart-total"></div>
+        <button id="order-btn" onclick="placeOrder()"
+            style="display:none">
+            📦 Place Order
+        </button>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('userId') || 1;
+
+        async function loadCart() {
+            const response = await fetch(
+                `http://localhost:8086/api/cart/${userId}`
+            );
+            const items = await response.json();
+            const container = document.getElementById('cart');
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                container.innerHTML =
+                    '<p>Your cart is empty! <a href="products.html">Shop now</a></p>';
+                document.getElementById('order-btn').style.display = 'none';
+                return;
+            }
+
+            let total = 0;
+            items.forEach(item => {
+                const subtotal = item.product.price * item.quantity;
+                total += subtotal;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <div class="cart-item-info">
+                        <h3>${item.product.name}</h3>
+                        <p>Price: ₹${item.product.price}</p>
+                        <p>Quantity: ${item.quantity}</p>
+                        <p>Subtotal: ₹${subtotal}</p>
+                    </div>
+                    <button class="delete-btn"
+                        onclick="removeItem(${item.id})">
+                        🗑️ Remove
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('cart-total').innerHTML =
+                `<h3>Total: ₹${total}</h3>`;
+            document.getElementById('order-btn').style.display = 'block';
+        }
+
+        async function removeItem(id) {
+            await fetch(`http://localhost:8086/api/cart/${id}`,
+                { method: 'DELETE' }
+            );
+            loadCart();
+        }
+
+        async function placeOrder() {
+            if (!confirm('Place order for all cart items?')) return;
+            const response = await fetch(
+                `http://localhost:8086/api/orders?userId=${userId}`,
+                { method: 'POST' }
+            );
+            const result = await response.text();
+            alert(result);
+            if (result.includes('successfully')) {
+                window.location.href = 'orders.html';
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        loadCart();
+    </script>
+</body>
+</html>

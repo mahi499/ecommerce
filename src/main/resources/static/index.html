@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEasy - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <h1>🛍️ ShopEasy</h1>
+            <h2>Login</h2>
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email" />
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" />
+            </div>
+            <button onclick="login()">Login</button>
+            <p>Don't have an account?
+                <a href="register.html">Register here</a>
+            </p>
+            <p id="message" class="message"></p>
+        </div>
+    </div>
+    <script>
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                showMessage('Please fill all fields!', 'red');
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:8086/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const text = await response.text();
+                if (text.startsWith('eyJ')) {
+                    localStorage.setItem('token', text);
+                    localStorage.setItem('userId', 1);
+                    localStorage.setItem('userEmail', email);
+                    window.location.href = 'products.html';
+                } else {
+                    showMessage(text, 'red');
+                }
+            } catch (error) {
+                showMessage('Server error! Is backend running?', 'red');
+            }
+        }
+        function showMessage(msg, color) {
+            const el = document.getElementById('message');
+            el.innerText = msg;
+            el.style.color = color;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEasy - Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <h1>🛍️ ShopEasy</h1>
+            <h2>Register</h2>
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Full Name" />
+            </div>
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email" />
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" />
+            </div>
+            <button onclick="register()">Register</button>
+            <p>Already have an account?
+                <a href="index.html">Login here</a>
+            </p>
+            <p id="message" class="message"></p>
+        </div>
+    </div>
+    <script>
+        async function register() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (!name || !email || !password) {
+                showMessage('Please fill all fields!', 'red');
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:8086/api/users/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const result = await response.text();
+                if (result === 'User registered successfully!') {
+                    showMessage(result, 'green');
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                } else {
+                    showMessage(result, 'red');
+                }
+            } catch (error) {
+                showMessage('Server error!', 'red');
+            }
+        }
+        function showMessage(msg, color) {
+            const el = document.getElementById('message');
+            el.innerText = msg;
+            el.style.color = color;
+        }
+    </script>
+</body>
+</html>
