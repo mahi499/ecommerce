@@ -110,7 +110,7 @@
 
         async function deleteProduct(id) {
             if (!confirm('Delete this product?')) return;
-            await fetch(`http://localhost:8086/api/products/${id}`,
+            await fetch(`https://ecommerce-um1u.onrender.com/api/products/${id}`,
                 { method: 'DELETE' }
             );
             loadProducts();

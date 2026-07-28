@@ -27,7 +27,7 @@
 
         async function loadOrders() {
             const response = await fetch(
-                `http://localhost:8086/api/orders/${userId}`
+            		`https://ecommerce-um1u.onrender.com/api/orders?userId=${userId}`
             );
             const orders = await response.json();
             const container = document.getElementById('orders');

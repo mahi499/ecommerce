@@ -81,7 +81,7 @@
         async function placeOrder() {
             if (!confirm('Place order for all cart items?')) return;
             const response = await fetch(
-                `http://localhost:8086/api/orders?userId=${userId}`,
+            		`https://ecommerce-um1u.onrender.com/api/orders/${userId}`,
                 { method: 'POST' }
             );
             const result = await response.text();
